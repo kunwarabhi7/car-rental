@@ -21,3 +21,13 @@ export interface AuthState {
   handleSignup: (e: React.FormEvent) => void;
   handleLogin: (e: React.FormEvent) => void;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  profilePic?: string;
+  googleId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

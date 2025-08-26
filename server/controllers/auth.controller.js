@@ -74,7 +74,6 @@ export const Login = async (req, res) => {
     } = user.toObject();
 
     res.cookie("refreshToken", refreshTokenPlain, refreshCookieOptions);
-    console.log("User from DB:", user);
 
     return res.status(200).json({
       token,
