@@ -19,14 +19,15 @@ export const validateRegister = [
   },
 ];
 
-// Login validation
+// Login validation (identifier = email ya username)
 export const validateLogin = [
-  body("email").isEmail().withMessage("Valid email required"),
+  body("identifier").notEmpty().withMessage("Email or Username required"),
   body("password").notEmpty().withMessage("Password required"),
   (req, res, next) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty())
+    if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
+    }
     next();
   },
 ];

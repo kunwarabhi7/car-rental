@@ -3,7 +3,7 @@ import { connectToDB } from "./utills/connectToDB.js";
 import { configDotenv } from "dotenv";
 import { authRouter } from "./routes/auth.route.js";
 import cors from "cors";
-import passport from "passport";
+import passport from "./config/passport.js";
 
 configDotenv();
 const PORT = process.env.PORT || 5000;

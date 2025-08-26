@@ -4,6 +4,7 @@ import {
   GoogleCallback,
   Login,
   Logout,
+  Refresh,
   Signup,
 } from "../controllers/auth.controller.js";
 import { validateLogin, validateRegister } from "../middleware/validators.js";
@@ -16,7 +17,7 @@ router.get("/", (req, res) => {
 });
 
 router.post("/signup", validateRegister, Signup);
-router.post("/login", validateLogin, Login);
+router.post("/login", Login);
 router.get("/google", Google);
 router.get("/google/callback", GoogleCallback);
 router.post("/refresh", Refresh);

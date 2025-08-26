@@ -42,7 +42,7 @@ export const Signup = async (req, res) => {
 };
 
 export const Login = async (req, res) => {
-  const { identifier, password } = req.body; // Allow username or email
+  const { identifier, password } = req.body;
   try {
     const user = await User.findOne({
       $or: [{ email: identifier }, { username: identifier }],
@@ -74,6 +74,8 @@ export const Login = async (req, res) => {
     } = user.toObject();
 
     res.cookie("refreshToken", refreshTokenPlain, refreshCookieOptions);
+    console.log("User from DB:", user);
+
     return res.status(200).json({
       token,
       user: userWithoutSensitive,
