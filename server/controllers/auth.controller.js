@@ -158,3 +158,14 @@ export const Logout = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getMe = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ message: "User fetched successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

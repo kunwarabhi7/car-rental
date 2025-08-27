@@ -33,8 +33,15 @@ export function useAuth(isSignup: boolean = false) {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Not authenticated");
+
+      // decode user from cache if available
+      const cachedUser: any = queryClient.getQueryData(["user"]);
+      const userId = cachedUser?._id || cachedUser?.id;
+
+      if (!userId) throw new Error("User ID not found");
+
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/me/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

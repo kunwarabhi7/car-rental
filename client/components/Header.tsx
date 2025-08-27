@@ -67,16 +67,10 @@ export default function Header() {
           ) : (
             <>
               <Link
-                href="/auth/login"
-                className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
-              >
-                Login
-              </Link>
-              <Link
                 href="/auth/register"
                 className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
               >
-                Register
+                Login / Register
               </Link>
             </>
           )}
@@ -126,18 +120,11 @@ export default function Header() {
           ) : (
             <>
               <Link
-                href="/auth/login"
-                className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
-                onClick={() => setOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
                 href="/auth/register"
                 className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
                 onClick={() => setOpen(false)}
               >
-                Register
+                Login / Register
               </Link>
             </>
           )}

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getMe,
   Google,
   GoogleCallback,
   Login,
@@ -17,13 +18,11 @@ router.get("/", (req, res) => {
 });
 
 router.post("/signup", validateRegister, Signup);
-router.post("/login", Login);
+router.post("/login", validateLogin, Login);
 router.get("/google", Google);
 router.get("/google/callback", GoogleCallback);
 router.post("/refresh", Refresh);
 router.post("/logout", authenticateJWT, Logout);
-router.get("/me", authenticateJWT, (req, res) => {
-  res.json({ user: req.user, message: "User data fetched" });
-});
+router.get("/me/:id", authenticateJWT, getMe);
 
 export { router as authRouter };

@@ -10,7 +10,7 @@ import { useEffect } from "react";
 
 export default function Profile() {
   const { user, userLoading, userError, logout, fetchCurrentUser } = useAuth();
-
+  console.log("User data:", user);
   // Debugging: Log errors
   useEffect(() => {
     if (userError) {
