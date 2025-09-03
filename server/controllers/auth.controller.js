@@ -169,3 +169,29 @@ export const getMe = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  if (id !== req.user.id)
+    return res.status(403).json({ message: "Unauthorized" });
+  const { username, email, profilePic } = req.body;
+  try {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { username, email, profilePic },
+      { new: true, runValidators: true }
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        profilePic: user.profilePic,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

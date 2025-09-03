@@ -20,14 +20,16 @@ export interface AuthState {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSignup: (e: React.FormEvent) => void;
   handleLogin: (e: React.FormEvent) => void;
+  logout: (e: React.FormEvent) => void;
 }
 
 export interface User {
-  id: string;
+  _id: string;
   username: string;
   email: string;
   profilePic?: string;
   googleId?: string;
   createdAt?: string;
   updatedAt?: string;
+  role?: "user" | "admin";
 }

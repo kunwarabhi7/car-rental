@@ -2,28 +2,13 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { DarkMode } from "@/components/DarkMode";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-
-const fetchUser = async () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data.user;
-};
+import { useAuth } from "@/lib/useAuth";
 
 export default function Header() {
-  const { data: user } = useQuery({
-    queryKey: ["user"],
-    queryFn: fetchUser,
-    retry: false,
-  });
-
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,18 +23,22 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex gap-10 items-center">
+        <nav className="hidden md:flex gap-8 items-center">
           <Link
             href="/"
-            className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
+            className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
           >
             Home
           </Link>
+
           {user ? (
             <>
+              <span className="text-lg font-medium text-gray-700 dark:text-gray-300 animate-fade-in">
+                Hello, {user.username}
+              </span>
               <Link
                 href="/profile"
-                className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
+                className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
               >
                 Profile
               </Link>
@@ -57,23 +46,22 @@ export default function Header() {
                 variant="outline"
                 className="border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 hover:scale-[1.02] font-medium"
                 onClick={() => {
-                  localStorage.removeItem("token");
-                  window.location.href = "/auth/login";
+                  logout();
+                  setOpen(false);
                 }}
               >
                 Logout
               </Button>
             </>
           ) : (
-            <>
-              <Link
-                href="/auth/register"
-                className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
-              >
-                Login / Register
-              </Link>
-            </>
+            <Link
+              href="/auth/register"
+              className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+            >
+              Login / Register
+            </Link>
           )}
+
           <DarkMode />
         </nav>
 
@@ -88,19 +76,23 @@ export default function Header() {
 
       {/* Mobile Nav */}
       {open && (
-        <div className="md:hidden bg-white/70 dark:bg-gray-900/80 text-gray-700 dark:text-gray-300 backdrop-blur-xl border-t border-gray-200/20 dark:border-gray-700/20 p-6 space-y-4 animate-slide-down">
+        <div className="md:hidden bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200/20 dark:border-gray-700/20 p-6 space-y-4">
           <Link
             href="/"
-            className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
+            className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
             onClick={() => setOpen(false)}
           >
             Home
           </Link>
+
           {user ? (
             <>
+              <span className="block text-lg font-medium text-gray-700 dark:text-gray-300 animate-fade-in">
+                Hello, {user.username}
+              </span>
               <Link
                 href="/profile"
-                className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
+                className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
                 onClick={() => setOpen(false)}
               >
                 Profile
@@ -109,8 +101,7 @@ export default function Header() {
                 variant="outline"
                 className="w-full border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 hover:scale-[1.02] font-medium"
                 onClick={() => {
-                  localStorage.removeItem("token");
-                  window.location.href = "/auth/login";
+                  logout();
                   setOpen(false);
                 }}
               >
@@ -118,16 +109,15 @@ export default function Header() {
               </Button>
             </>
           ) : (
-            <>
-              <Link
-                href="/auth/register"
-                className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 animate-fade-in"
-                onClick={() => setOpen(false)}
-              >
-                Login / Register
-              </Link>
-            </>
+            <Link
+              href="/auth/register"
+              className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+              onClick={() => setOpen(false)}
+            >
+              Login / Register
+            </Link>
           )}
+
           <DarkMode />
         </div>
       )}

@@ -7,6 +7,7 @@ import {
   Logout,
   Refresh,
   Signup,
+  updateUser,
 } from "../controllers/auth.controller.js";
 import { validateLogin, validateRegister } from "../middleware/validators.js";
 import { authenticateJWT } from "../middleware/auth.middleware.js";
@@ -23,6 +24,6 @@ router.get("/google", Google);
 router.get("/google/callback", GoogleCallback);
 router.post("/refresh", Refresh);
 router.post("/logout", authenticateJWT, Logout);
-router.get("/me/:id", authenticateJWT, getMe);
-
+router.get("/me", authenticateJWT, getMe);
+router.put("/me/:id", authenticateJWT, updateUser);
 export { router as authRouter };
