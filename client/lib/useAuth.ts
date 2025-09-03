@@ -5,17 +5,14 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { AuthResponse, FormData, User } from "./interface";
+import { AuthResponse, FormData, UpdateFormData, User } from "./interface";
 
-interface UpdateFormData {
-  username: string;
-  email: string;
-  profilePic?: string;
-}
-
+// ------------------ Hook ------------------
 export function useAuth(isSignup: boolean = false) {
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  // Auth forms state
   const [formData, setFormData] = useState<FormData>({
     username: isSignup ? "" : undefined,
     email: isSignup ? "" : undefined,
@@ -23,11 +20,13 @@ export function useAuth(isSignup: boolean = false) {
     password: "",
     confirmPassword: isSignup ? "" : undefined,
   });
+
   const [updateFormData, setUpdateFormData] = useState<UpdateFormData>({
     username: "",
     email: "",
     profilePic: "",
   });
+
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [strengthMessage, setStrengthMessage] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string | string[] }>(
@@ -37,70 +36,57 @@ export function useAuth(isSignup: boolean = false) {
     {}
   );
   const [isClient, setIsClient] = useState(false);
-
-  // Set isClient to true after mount
+  const [loading, setLoading] = useState(true);
+  // ------------------ Setup ------------------
   useEffect(() => {
     setIsClient(true);
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      console.log("useAuth: Token on mount:", token ? "Present" : "Missing");
-    }
   }, []);
 
-  // Fetch current user
+  // ------------------ Fetch current user ------------------
   const {
     data: user,
     isLoading: userLoading,
     error: userError,
-    isFetching,
-  } = useQuery<User, Error>({
+  } = useQuery<User | null, Error>({
     queryKey: ["user"],
     queryFn: async () => {
       const token = isClient ? localStorage.getItem("token") : null;
-      if (!token) throw new Error("Not authenticated");
+      if (!token) {
+        setLoading(false); // important, warna stuck loader hoga
+        return null; // ❌ error throw mat karna
+      }
+
       try {
-        console.log(
-          "useAuth: Fetching user with token:",
-          token.substring(0, 10) + "..."
-        );
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        console.log("useAuth: User fetched:", res.data.user);
         return res.data.user;
       } catch (error: any) {
-        console.error(
-          "useAuth: User fetch error:",
-          error.response?.data || error.message
-        );
         if (error.response?.status === 401) {
           if (isClient) {
             localStorage.removeItem("token");
             queryClient.setQueryData(["user"], null);
-            console.log("useAuth: Token removed due to 401");
+            router.push("/auth/login");
           }
           throw new Error("Session expired. Please log in again.");
         }
-        // Don't remove token for 404, keep it for retry
         throw new Error(
           error.response?.data?.message || "Failed to fetch user"
         );
+      } finally {
+        setLoading(false);
       }
     },
-    retry: (failureCount, error) => {
-      // Retry up to 2 times for non-401 errors
-      if (error.message.includes("Session expired")) return false;
-      return failureCount < 2;
-    },
-    enabled: isClient && !!localStorage?.getItem("token"),
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    refetchOnWindowFocus: false, // Prevent refetch on tab focus
+    enabled: isClient, // ✅ token check ab queryFn ke andar ho raha
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
-  // Pre-fill update form with user data
+  // ------------------ Prefill update form ------------------
   useEffect(() => {
     if (user) {
       setUpdateFormData({
@@ -111,17 +97,7 @@ export function useAuth(isSignup: boolean = false) {
     }
   }, [user]);
 
-  // Debug userError
-  useEffect(() => {
-    if (userError) {
-      console.error("useAuth: User fetch error:", userError.message);
-      toast.error(userError.message, {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
-    }
-  }, [userError]);
-
-  // Password strength logic
+  // ------------------ Password strength ------------------
   const validatePassword = (password: string) => {
     const criteria = [
       {
@@ -141,7 +117,7 @@ export function useAuth(isSignup: boolean = false) {
         message: "At least one number",
       },
       {
-        test: (pwd: string) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd),
+        test: (pwd: string) => /[!@#$%^&*(),.?\":{}|<>]/.test(pwd),
         message: "At least one special character",
       },
     ];
@@ -170,119 +146,75 @@ export function useAuth(isSignup: boolean = false) {
     }
   }, [formData.password]);
 
-  // Signup mutation
+  // ------------------ Mutations ------------------
   const signupMutation = useMutation<AuthResponse, Error, FormData>({
     mutationFn: (form) =>
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, form)
         .then((res) => res.data),
     onSuccess: (data) => {
-      if (isClient) {
-        localStorage.setItem("token", data.token);
-        console.log(
-          "useAuth: Token set after signup:",
-          data.token.substring(0, 10) + "..."
-        );
-      }
+      if (isClient) localStorage.setItem("token", data.token);
       queryClient.setQueryData(["user"], data.user);
-      toast.success("Registration successful!", {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
+      toast.success("Registration successful!");
       router.push("/profile");
     },
     onError: (error: any) => {
-      console.error(
-        "useAuth: Signup error:",
-        error.response?.data || error.message
-      );
-      toast.error(error.response?.data?.message || "Registration failed", {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
+      toast.error(error.response?.data?.message || "Registration failed");
       setErrors({
         submit: error.response?.data?.message || "Registration failed",
       });
     },
   });
 
-  // Login mutation
   const loginMutation = useMutation<AuthResponse, Error, FormData>({
     mutationFn: (form) =>
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, form)
         .then((res) => res.data),
     onSuccess: (data) => {
-      if (isClient) {
-        localStorage.setItem("token", data.token);
-        console.log(
-          "useAuth: Token set after login:",
-          data.token.substring(0, 10) + "..."
-        );
-      }
+      if (isClient) localStorage.setItem("token", data.token);
       queryClient.setQueryData(["user"], data.user);
-      toast.success("Login successful!", {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
+      toast.success("Login successful!");
       router.push("/profile");
     },
     onError: (error: any) => {
-      console.error(
-        "useAuth: Login error:",
-        error.response?.data || error.message
-      );
-      toast.error(error.response?.data?.message || "Login failed", {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
+      toast.error(error.response?.data?.message || "Login failed");
       setErrors({ submit: error.response?.data?.message || "Login failed" });
     },
   });
 
-  // Update profile mutation
   const updateMutation = useMutation<AuthResponse, Error, UpdateFormData>({
     mutationFn: (data) =>
       axios
-        .put(`${process.env.NEXT_PUBLIC_API_URL}/users/${user?._id}`, data, {
-          headers: {
-            Authorization: `Bearer ${
-              isClient ? localStorage.getItem("token") : ""
-            }`,
-          },
+        .put(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/${user?._id}`, data, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => res.data),
     onSuccess: (data) => {
       queryClient.setQueryData(["user"], data.user);
-      toast.success("Profile updated successfully!", {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
+      toast.success("Profile updated successfully!");
     },
     onError: (error: any) => {
-      console.error(
-        "useAuth: Update error:",
-        error.response?.data || error.message
-      );
-      toast.error(error.response?.data?.message || "Update failed", {
-        style: { background: "#1E3A8A", color: "#FFFFFF" },
-      });
+      toast.error(error.response?.data?.message || "Update failed");
       setUpdateErrors({
         submit: error.response?.data?.message || "Update failed",
       });
     },
   });
 
-  // Handle input change for auth forms
+  // ------------------ Handlers ------------------
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Handle input change for update form
   const handleUpdateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUpdateFormData((prev) => ({ ...prev, [name]: value }));
     setUpdateErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Handle signup
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { [key: string]: string | string[] } = {};
@@ -306,7 +238,6 @@ export function useAuth(isSignup: boolean = false) {
     });
   };
 
-  // Handle login
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { [key: string]: string } = {};
@@ -323,15 +254,12 @@ export function useAuth(isSignup: boolean = false) {
     });
   };
 
-  // Handle Google OAuth
   const handleGoogleAuth = () => {
     if (isClient) {
-      console.log("useAuth: Initiating Google OAuth redirect");
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     }
   };
 
-  // Handle profile update
   const updateProfile = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { [key: string]: string } = {};
@@ -345,48 +273,41 @@ export function useAuth(isSignup: boolean = false) {
       setUpdateErrors({ submit: "User not authenticated" });
       return;
     }
-    console.log("useAuth: Updating profile for user:", user._id);
     updateMutation.mutate(updateFormData);
   };
 
-  // Logout
   const logout = () => {
-    if (isClient) {
-      localStorage.removeItem("token");
-      console.log("useAuth: Token removed on logout");
-    }
+    if (isClient) localStorage.removeItem("token");
     queryClient.setQueryData(["user"], null);
-    toast.success("Logged out successfully!", {
-      style: { background: "#1E3A8A", color: "#FFFFFF" },
-    });
+    toast.success("Logged out successfully!");
     router.push("/auth/login");
   };
 
-  // Fetch current user
   const fetchCurrentUser = () => {
-    console.log("useAuth: Invalidating user query");
     queryClient.invalidateQueries({ queryKey: ["user"] });
   };
 
+  // ------------------ Return ------------------
   return {
     formData,
+    updateFormData,
     passwordStrength,
     strengthMessage,
     errors,
-    updateFormData,
     updateErrors,
     isPending: signupMutation.isPending || loginMutation.isPending,
     isUpdatePending: updateMutation.isPending,
     handleChange,
+    handleUpdateChange,
     handleSignup,
     handleLogin,
     handleGoogleAuth,
-    handleUpdateChange,
     updateProfile,
+    logout,
+    fetchCurrentUser,
     user,
     userLoading,
     userError,
-    logout,
-    fetchCurrentUser,
+    loading,
   };
 }

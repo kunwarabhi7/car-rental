@@ -8,7 +8,7 @@ export interface FormData {
 
 export interface AuthResponse {
   token: string;
-  user: any;
+  user: User;
 }
 
 export interface AuthState {
@@ -20,7 +20,15 @@ export interface AuthState {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSignup: (e: React.FormEvent) => void;
   handleLogin: (e: React.FormEvent) => void;
-  logout: (e: React.FormEvent) => void;
+  handleLogout: () => void;
+  user: User | null;
+  isLoading: boolean;
+}
+
+export interface UpdateFormData {
+  username: string;
+  email: string;
+  profilePic?: string;
 }
 
 export interface User {

@@ -8,18 +8,21 @@ import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading, userLoading } = useAuth();
   const [open, setOpen] = useState(false);
+
+  if (loading || userLoading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl shadow-2xl border-b border-gray-200/20 dark:border-gray-700/20">
       <div className="container mx-auto flex justify-between items-center px-4 py-4">
         {/* Logo */}
-        <Link
-          href="/"
-          className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent animate-fade-in"
-        >
-          CarRental
+        <Link href="/" className="text-3xl font-bold tracking-tight">
+          <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+            CarRental
+          </span>
         </Link>
 
         {/* Desktop Nav */}
