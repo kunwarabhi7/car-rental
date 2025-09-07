@@ -6,6 +6,7 @@ import { DarkMode } from "@/components/DarkMode";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
+import CarSearchDropdown from "./SearchBar";
 
 export default function Header() {
   const { user, logout, loading, userLoading } = useAuth();
@@ -20,34 +21,40 @@ export default function Header() {
       <div className="container mx-auto flex justify-between items-center px-4 py-4">
         {/* Logo */}
         <Link href="/" className="text-3xl font-bold tracking-tight">
-          <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-            CarRental
+          <span className="bg-white bg-clip-text text-transparent">Car</span>
+          <span className="bg-orange-500 bg-clip-text text-transparent">
+            Rental
           </span>
         </Link>
+
+        {/* Search Bar (desktop only) */}
+        <div className="hidden md:block w-full max-w-md mx-6">
+          <CarSearchDropdown />
+        </div>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-8 items-center">
           <Link
             href="/"
-            className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+            className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200"
           >
             Home
           </Link>
 
           {user ? (
             <>
-              <span className="text-lg font-medium text-gray-700 dark:text-gray-300 animate-fade-in">
+              <span className="text-lg font-medium text-gray-700 dark:text-gray-300">
                 Hello, {user.username}
               </span>
               <Link
                 href="/profile"
-                className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+                className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200"
               >
                 Profile
               </Link>
               <Button
                 variant="outline"
-                className="border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 hover:scale-[1.02] font-medium"
+                className="border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium"
                 onClick={() => {
                   logout();
                   setOpen(false);
@@ -59,7 +66,7 @@ export default function Header() {
           ) : (
             <Link
               href="/auth/register"
-              className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+              className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200"
             >
               Login / Register
             </Link>
@@ -77,12 +84,17 @@ export default function Header() {
         </button>
       </div>
 
+      {/* Search bar in mobile view */}
+      <div className="px-4 pb-3 md:hidden">
+        <CarSearchDropdown />
+      </div>
+
       {/* Mobile Nav */}
       {open && (
         <div className="md:hidden bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200/20 dark:border-gray-700/20 p-6 space-y-4">
           <Link
             href="/"
-            className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+            className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200"
             onClick={() => setOpen(false)}
           >
             Home
@@ -90,19 +102,19 @@ export default function Header() {
 
           {user ? (
             <>
-              <span className="block text-lg font-medium text-gray-700 dark:text-gray-300 animate-fade-in">
+              <span className="block text-lg font-medium text-gray-700 dark:text-gray-300">
                 Hello, {user.username}
               </span>
               <Link
                 href="/profile"
-                className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+                className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200"
                 onClick={() => setOpen(false)}
               >
                 Profile
               </Link>
               <Button
                 variant="outline"
-                className="w-full border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 hover:scale-[1.02] font-medium"
+                className="w-full border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium"
                 onClick={() => {
                   logout();
                   setOpen(false);
@@ -114,7 +126,7 @@ export default function Header() {
           ) : (
             <Link
               href="/auth/register"
-              className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200 animate-fade-in"
+              className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-orange-400 transition-colors duration-200"
               onClick={() => setOpen(false)}
             >
               Login / Register

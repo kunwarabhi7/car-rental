@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {
   return (
-    <section className="py-24 text-center ">
+    <section className="py-20 text-center">
       <div className="container mx-auto px-6">
         <h1 className="text-5xl md:text-6xl font-bold tracking-tight animate-fade-in bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
           Rent Your Dream Car
